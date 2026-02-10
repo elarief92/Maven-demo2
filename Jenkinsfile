@@ -16,15 +16,16 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build + Sonar Scan') {
             steps {
-                sh 'mvn clean compile'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh 'mvn test'
+                withSonarQubeEnv('SonarServer') {
+                    withCredentials([string(credentialsId: 'Access-to-SonarQube-Server', variable: 'SONAR_TOKEN')]) {
+                        sh '''
+                            mvn clean install org.sonarsource.scanner.maven:sonar-maven-plugin:4.0.0.4121:sonar \
+                            -Dsonar.login=$SONAR_TOKEN
+                        '''
+                    }
+                }
             }
         }
 
