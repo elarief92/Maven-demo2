@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        BUILD_TIMESTAMP = "${new Date().format('yyyyMMddHHmmss')}"
+        BUILD_TIMESTAMP = "${new Date().format('yyyy-MM-dd_HH:mm')}"
     }
 
     stages {
@@ -49,7 +49,7 @@ pipeline {
                 nexusVersion: 'nexus3',
                 protocol: 'http',
                 repository: 'netflix',
-                version: "2.3.0.RELEASE${BUILD_TIMESTAMP}"
+                version: "RELEASE${BUILD_TIMESTAMP}"
             }
         }
 
