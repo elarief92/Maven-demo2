@@ -5,6 +5,10 @@ pipeline {
         maven 'Maven-3.9.2'
     }
 
+    environment {
+        BUILD_TIMESTAMP = "${new Date().format('yyyyMMddHHmmss')}"
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -25,23 +29,27 @@ pipeline {
         }
 
         stage('Package') {
-    steps {
-        sh 'mvn package'
-        sh 'ls -la target'
-    }
-}
-
+            steps {
+                sh 'mvn package'
+                sh 'ls -la target'
+            }
+        }
 
         stage('Upload Artifact to Nexus') {
             steps {
-                nexusArtifactUploader artifacts: [[artifactId: 'spring-boot-starter-parent', classifier: '', file: 'target/test.war', type: 'war']],
-                    credentialsId: 'Access-to-Nexus-Server',
-                    groupId: 'org.springframework.boot',
-                    nexusUrl: 'localhost:8081',
-                    nexusVersion: 'nexus3',
-                    protocol: 'http',
-                    repository: 'netflix',
-                    version: '2.3.0.RELEASE'
+                nexusArtifactUploader artifacts: [[
+                    artifactId: 'demo1',
+                    classifier: '',
+                    file: 'target/demo1-0.0.1-SNAPSHOT.jar',
+                    type: 'jar'
+                ]],
+                credentialsId: 'Access-to-Nexus-Server',
+                groupId: 'com.example',
+                nexusUrl: 'localhost:8081',
+                nexusVersion: 'nexus3',
+                protocol: 'http',
+                repository: 'netflix',
+                version: "2.3.0.RELEASE${BUILD_TIMESTAMP}"
             }
         }
 
