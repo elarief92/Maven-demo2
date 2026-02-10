@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('code') {
             steps {
-                git url: 'https://github.com/devopsbyraham/jenkins-java-project.git'
+                git url: 'https://github.com/elarief92/Maven-demo2.git'
             }
         }
         stage('build') {
@@ -26,9 +26,9 @@ pipeline {
                 sh 'mvn package'
             }
         }
-        stage('s3') {
+        stage('Artifacts Upload') {
             steps {
-                s3Upload consoleLogLevel: 'INFO', dontSetBuildResultOnFailure: false, dontWaitForConcurrentBuildCompletion: false, entries: [[bucket: 'artifactbucketfornetflixapp', excludedFile: '', flatten: false, gzipFiles: false, keepForever: false, managedArtifacts: false, noUploadOnFailure: false, selectedRegion: 'ap-south-1', showDirectlyInBrowser: false, sourceFile: 'target/NETFLIX-1.2.2.war', storageClass: 'STANDARD', uploadFromSlave: false, useServerSideEncryption: false]], pluginFailureResultConstraint: 'FAILURE', profileName: 'raham', userMetadata: []
+			nexusArtifactUploader artifacts: [[artifactId: 'Elarief', classifier: '', file: '/Target/test.war', type: '.war']], credentialsId: 'Access-to-Nexus-Server', groupId: 'org.springframework.boot', nexusUrl: 'localhost:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'netflix', version: '2.3.0.RELEASE'
             }
         }
         stage('deploy') {
