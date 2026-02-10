@@ -1,39 +1,53 @@
 pipeline {
     agent any
-    
+
     tools {
-        maven 'maven'
+        maven 'Maven-3.9.2'
     }
-    
+
     stages {
-        stage('code') {
+        stage('Checkout') {
             steps {
-                git url: 'https://github.com/elarief92/Maven-demo2.git'
+                git branch: 'main', url: 'https://github.com/elarief92/Maven-demo2.git'
             }
         }
-        stage('build') {
+
+        stage('Build') {
             steps {
-                sh 'mvn compile'
+                sh 'mvn clean compile'
             }
         }
-        stage('test') {
+
+        stage('Test') {
             steps {
                 sh 'mvn test'
             }
         }
-        stage('artifact') {
+
+        stage('Package') {
+    steps {
+        sh 'mvn package'
+        sh 'ls -la target'
+    }
+}
+
+
+        stage('Upload Artifact to Nexus') {
             steps {
-                sh 'mvn package'
+                nexusArtifactUploader artifacts: [[artifactId: 'spring-boot-starter-parent', classifier: '', file: 'target/test.war', type: 'war']],
+                    credentialsId: 'Access-to-Nexus-Server',
+                    groupId: 'org.springframework.boot',
+                    nexusUrl: 'localhost:8081',
+                    nexusVersion: 'nexus3',
+                    protocol: 'http',
+                    repository: 'netflix',
+                    version: '2.3.0.RELEASE'
             }
         }
-        stage('Artifacts Upload') {
+
+        stage('Deploy') {
             steps {
-			nexusArtifactUploader artifacts: [[artifactId: 'Elarief', classifier: '', file: '/Target/test.war', type: '.war']], credentialsId: 'Access-to-Nexus-Server', groupId: 'org.springframework.boot', nexusUrl: 'localhost:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'netflix', version: '2.3.0.RELEASE'
-            }
-        }
-        stage('deploy') {
-            steps {
-                echo "my code is deployed"
+                echo 'My code is deployed'
             }
         }
     }
