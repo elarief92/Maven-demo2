@@ -29,6 +29,20 @@ pipeline {
             }
         }
 
+        stage('Wait for Sonar Task') {
+            steps {
+                sleep(time: 10, unit: 'SECONDS')
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
         stage('Package') {
             steps {
                 sh 'mvn package'
