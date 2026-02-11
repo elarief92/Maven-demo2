@@ -7,6 +7,8 @@ pipeline {
 
     environment {
         BUILD_TIMESTAMP = "${new Date().format('yyyy-MM-dd_HH:mm')}"
+        NOTIFY_TO       = "mohamed.elarief30@gmail.com"
+        APP_PORT        = "8090"
     }
 
     stages {
@@ -109,6 +111,65 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            emailext(
+                to: "${env.NOTIFY_TO}",
+                mimeType: 'text/plain',
+                subject: "SUCCESS | ${env.JOB_NAME} #${env.BUILD_NUMBER} | ${env.BUILD_TIMESTAMP}",
+                body: """Build Result: SUCCESS
+Job: ${env.JOB_NAME}
+Build Number: ${env.BUILD_NUMBER}
+Build URL: ${env.BUILD_URL}
+
+Git Branch: main
+App: demo1
+Release Version: RELEASE${env.BUILD_TIMESTAMP}
+
+Nexus Repo: netflix
+Nexus URL: http://localhost:8081
+Deployed Location: /var/lib/jenkins/apps/demo1
+App Port: ${env.APP_PORT}
+
+Test URLs:
+- http://localhost:${env.APP_PORT}/persons/all
+- http://localhost:${env.APP_PORT}/persons/1
+"""
+            )
+        }
+
+        failure {
+            emailext(
+                to: "${env.NOTIFY_TO}",
+                mimeType: 'text/plain',
+                subject: "FAILED | ${env.JOB_NAME} #${env.BUILD_NUMBER} | ${env.BUILD_TIMESTAMP}",
+                body: """Build Result: FAILED
+Job: ${env.JOB_NAME}
+Build Number: ${env.BUILD_NUMBER}
+Build URL: ${env.BUILD_URL}
+
+Please review the Jenkins Console Output for the failure reason.
+Log Location (if deploy started): /var/lib/jenkins/apps/demo1/demo1.log
+"""
+            )
+        }
+
+        unstable {
+            emailext(
+                to: "${env.NOTIFY_TO}",
+                mimeType: 'text/plain',
+                subject: "UNSTABLE | ${env.JOB_NAME} #${env.BUILD_NUMBER} | ${env.BUILD_TIMESTAMP}",
+                body: """Build Result: UNSTABLE
+Job: ${env.JOB_NAME}
+Build Number: ${env.BUILD_NUMBER}
+Build URL: ${env.BUILD_URL}
+
+Check test failures or quality gate warnings in the Jenkins Console Output.
+"""
+            )
         }
     }
 }
