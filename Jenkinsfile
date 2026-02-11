@@ -70,7 +70,44 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                echo 'My code is deployed'
+                script {
+                    def APP_NAME   = "demo1"
+                    def GROUP_PATH = "com/example"
+                    def VERSION    = "RELEASE${env.BUILD_TIMESTAMP}"
+                    def NEXUS_BASE = "http://localhost:8081/repository/netflix"
+                    def ART_URL    = "${NEXUS_BASE}/${GROUP_PATH}/${APP_NAME}/${VERSION}/${APP_NAME}-${VERSION}.jar"
+
+                    withCredentials([usernamePassword(credentialsId: 'Access-to-Nexus-Server', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                        sh """
+                            set -e
+
+                            echo "Deploying ${APP_NAME} version: ${VERSION}"
+                            echo "Artifact URL: ${ART_URL}"
+
+                            DEPLOY_DIR=/var/lib/jenkins/apps/${APP_NAME}
+                            mkdir -p \$DEPLOY_DIR
+
+                            curl -fL -u "\$NEXUS_USER:\$NEXUS_PASS" -o \$DEPLOY_DIR/${APP_NAME}.jar "${ART_URL}"
+
+                            if [ -f \$DEPLOY_DIR/${APP_NAME}.pid ]; then
+                              OLD_PID=\$(cat \$DEPLOY_DIR/${APP_NAME}.pid || true)
+                              if [ ! -z "\$OLD_PID" ] && kill -0 "\$OLD_PID" 2>/dev/null; then
+                                echo "Stopping old process \$OLD_PID"
+                                kill "\$OLD_PID" || true
+                                sleep 5
+                              fi
+                              rm -f \$DEPLOY_DIR/${APP_NAME}.pid
+                            fi
+
+                            cd \$DEPLOY_DIR
+                            rm -f ${APP_NAME}.log
+                            setsid java -jar \$DEPLOY_DIR/${APP_NAME}.jar > \$DEPLOY_DIR/${APP_NAME}.log 2>&1 < /dev/null & echo \$! > \$DEPLOY_DIR/${APP_NAME}.pid
+
+                            echo "Started new process PID: \$(cat \$DEPLOY_DIR/${APP_NAME}.pid)"
+                            echo "Deployment completed successfully"
+                        """
+                    }
+                }
             }
         }
     }
