@@ -1,9 +1,7 @@
 package com.example.controller;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,11 +15,14 @@ import com.example.service.PersonService;
 @RequestMapping("/persons")
 public class PersonController {
 
-	@Autowired
-	PersonService ps;
+	private final PersonService ps;
+
+	public PersonController(PersonService ps) {
+		this.ps = ps;
+	}
 
 	@RequestMapping("/all")
-	public ArrayList<Person> getAll() {
+	public List<Person> getAll() {
 		return ps.getAll();
 	}
 

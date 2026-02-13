@@ -1,8 +1,7 @@
 package com.example.service;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.stream.Stream;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -10,7 +9,7 @@ import com.example.model.Person;
 
 @Service
 public class PersonService {
-	ArrayList<Person> persons = new ArrayList<Person>();
+	private final List<Person> persons = new ArrayList<>();
 	public PersonService() {
 		Person p = new Person();
 		p.setId("1");
@@ -47,7 +46,7 @@ public class PersonService {
 		}
 	    return null;
 	}
-	public ArrayList<Person> getAll() {
+	public List<Person> getAll() {
 		return persons;
 	}
 }
