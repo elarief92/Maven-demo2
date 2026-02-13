@@ -1,0 +1,69 @@
+# docker-compose.yml
+# SonarQube + Postgres + SonarQube MCP
+# - Fixed Docker network name: "sonarnet" (stable DNS between containers)
+# - Persists data using named volumes
+# - Auto-restarts services unless stopped
+# - Adds jenkins.internal mapping for containers (needed for SonarQube -> Jenkins webhook)
+
+services:
+  sonarqube_db:
+    image: postgres:15
+    container_name: sonarqube_db
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    volumes:
+      - sonarqube_db_data:/var/lib/postgresql/data
+    networks:
+      - sonarnet
+    restart: unless-stopped
+
+  sonarqube:
+    image: sonarqube:25.1.0.102122-community
+    container_name: sonarqube
+    depends_on:
+      - sonarqube_db
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonarqube_db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    # Make "jenkins.internal" resolvable from inside the SonarQube container
+    extra_hosts:
+      - "jenkins.internal:172.31.54.35"
+    networks:
+      - sonarnet
+    restart: unless-stopped
+
+  sonarqube-mcp:
+    image: mcp/sonarqube
+    container_name: sonarqube-mcp
+    depends_on:
+      - sonarqube
+    environment:
+      SONARQUBE_TOKEN: "squ_3fe7a9aec35b411b38f2217cf2427798a8452a0f"
+      SONARQUBE_URL: "http://sonarqube:9000"
+    # (Optional but recommended) If MCP or other tooling needs to reach Jenkins by hostname too
+    extra_hosts:
+      - "jenkins.internal:172.31.54.35"
+    networks:
+      - sonarnet
+    restart: unless-stopped
+
+networks:
+  sonarnet:
+    # Force a stable network name (prevents name like "project_sonarnet")
+    name: sonarnet
+
+volumes:
+  sonarqube_db_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+
