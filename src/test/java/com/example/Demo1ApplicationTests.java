@@ -8,6 +8,7 @@ class Demo1ApplicationTests {
 
 	@Test
 	void contextLoads() {
+		// Verifies that the Spring application context loads successfully; no assertion needed.
 	}
 
 }
