@@ -14,17 +14,18 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/elarief92/Maven-demo2.git'
+                git branch: 'Branch2', url: 'https://github.com/elarief92/Maven-demo2.git'
             }
         }
 
         stage('Build + Sonar Scan') {
             steps {
-                withSonarQubeEnv('SonarServer') {
+                withSonarQubeEnv('SonarServer-old') {
                     withCredentials([string(credentialsId: 'Access-to-SonarQube-Server', variable: 'SONAR_TOKEN')]) {
                         sh '''
                             mvn clean install org.sonarsource.scanner.maven:sonar-maven-plugin:4.0.0.4121:sonar \
-                            -Dsonar.login=$SONAR_TOKEN
+                            -Dsonar.login=$SONAR_TOKEN \
+                            -Dsonar.branch.name=Branch2
                         '''
                     }
                 }
@@ -125,7 +126,7 @@ Job: ${env.JOB_NAME}
 Build Number: ${env.BUILD_NUMBER}
 Build URL: ${env.BUILD_URL}
 
-Git Branch: main
+Git Branch: Branch2
 App: demo1
 Release Version: RELEASE${env.BUILD_TIMESTAMP}
 
@@ -151,6 +152,8 @@ Job: ${env.JOB_NAME}
 Build Number: ${env.BUILD_NUMBER}
 Build URL: ${env.BUILD_URL}
 
+Git Branch: Branch2
+
 Please review the Jenkins Console Output for the failure reason.
 Log Location (if deploy started): /var/lib/jenkins/apps/demo1/demo1.log
 """
@@ -166,6 +169,8 @@ Log Location (if deploy started): /var/lib/jenkins/apps/demo1/demo1.log
 Job: ${env.JOB_NAME}
 Build Number: ${env.BUILD_NUMBER}
 Build URL: ${env.BUILD_URL}
+
+Git Branch: Branch2
 
 Check test failures or quality gate warnings in the Jenkins Console Output.
 """
